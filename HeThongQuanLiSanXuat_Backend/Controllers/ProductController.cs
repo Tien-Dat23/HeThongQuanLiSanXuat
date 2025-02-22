@@ -25,6 +25,19 @@ namespace HeThongQuanLiSanXuat_Backend.Controllers
             return Ok(new { data = products });
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var product = await dbc.Products.FindAsync(id);
+
+            if (product == null)
+            {
+                return NotFound(new { message = "Sản phẩm không tồn tại." });
+            }
+
+            return Ok(new { product });
+        }
+
         // 2. POST
         [HttpPost("Insert")]
         public async Task<IActionResult> Insert([FromBody] Product product)
