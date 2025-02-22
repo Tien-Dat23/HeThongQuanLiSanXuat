@@ -1,0 +1,170 @@
+﻿<div class="container mt-4">
+    <h2 class="mb-3">Danh Mục Sản Phẩm</h2>
+
+    <!-- Nút thêm sản phẩm -->
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">
+        <i class="fas fa-plus"></i> Thêm sản phẩm
+    </button>
+
+    <!-- Bảng danh mục sản phẩm -->
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Mã sản phẩm</th>
+                <th>Tên sản phẩm</th>
+                <th>Đơn vị tính</th>
+                <th>Mô tả</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody id="productTable">
+            <!-- Dữ liệu sẽ được load từ API -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal thêm/sửa sản phẩm -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addProductModalLabel">Thêm Sản Phẩm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <input type="hidden" id="productId">
+                    <div class="mb-3">
+                        <label for="productCode" class="form-label">Mã sản phẩm</label>
+                        <input type="text" class="form-control" id="productCode" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productName" class="form-label">Tên sản phẩm</label>
+                        <input type="text" class="form-control" id="productName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="unit" class="form-label">Đơn vị tính</label>
+                        <input type="text" class="form-control" id="unit" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="description" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Link Bootstrap & FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Load jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- JavaScript -->
+<script>
+    const apiUrl = "https://localhost:7010/api/Product/List"; // Đổi URL nếu cần
+
+    // Hàm lấy danh sách sản phẩm
+    async function loadProducts() {
+        try {
+            const response = await fetch(apiUrl);
+            const result = await response.json();
+
+            if (response.ok) {
+                const products = result.data;
+                const tableBody = document.getElementById("productTable");
+                tableBody.innerHTML = ""; // Xóa dữ liệu cũ
+
+                products.forEach(product => {
+                    const row = `<tr>
+                        <td>${product.productCode}</td>
+                        <td>${product.productName}</td>
+                        <td>${product.unit}</td>
+                        <td>${product.description}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editProduct(${product.id})">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            } else {
+                console.error("Lỗi tải danh sách sản phẩm:", result.message);
+            }
+        }catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+
+    //Thêm sản phẩm
+    async function addProduct(event) {
+        event.preventDefault(); // Ngăn chặn form submit mặc định
+
+        const productCode = document.getElementById("productCode").value;
+        const productName = document.getElementById("productName").value;
+        const unit = document.getElementById("unit").value;
+        const description = document.getElementById("description").value;
+
+        const product = {
+            productCode: productCode,
+            productName: productName,
+            unit: unit,
+            description: description
+        };
+
+        try {
+            const response = await fetch("https://localhost:7010/api/Product/Insert", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(product)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Thêm sản phẩm mới vào danh sách hiện tại
+                const tableBody = document.getElementById("productTable");
+                const newRow = `<tr>
+                    <td>${productCode}</td>
+                    <td>${productName}</td>
+                    <td>${unit}</td>
+                    <td>${description}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editProduct(${product.productId})">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.productId})">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += newRow;
+
+                // Đóng modal
+                $('#addProductModal').modal('hide');
+            } else {
+                console.error("Lỗi khi thêm sản phẩm:", result.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    // Gắn sự kiện submit cho form
+    document.getElementById("productForm").addEventListener("submit", addProduct);
+
+    
+
+    // Tải dữ liệu khi trang load
+    loadProducts();
+</script>
