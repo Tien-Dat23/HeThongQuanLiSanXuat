@@ -1,1 +1,294 @@
-﻿<h1>Lệnh sản xuất</h1>
+﻿<div class="container mt-4">
+    <h2 class="mb-3">Danh Mục Lệnh Sản Xuất</h2>
+
+    <!-- Nút thêm lệnh sản xuất -->
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addOrderModal" onclick="resetForm()">
+        <i class="fas fa-plus"></i> Thêm Lệnh Sản Xuất
+    </button>
+
+    <!-- Bảng danh mục lệnh sản xuất -->
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Mã Lệnh</th>
+                <th>Tên Lệnh</th>
+                <th>Mã sản phẩm</th>
+                <th>Số lượng</th>
+                <th>Mô tả</th>
+                <th>Ngày Bắt Đầu</th>
+                <th>Ngày Kết Thúc</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody id="orderTable">
+            <!-- Dữ liệu sẽ được load từ API -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal thêm/sửa lệnh sản xuất -->
+<div class="modal fade" id="addOrderModal" tabindex="-1" aria-labelledby="addOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addOrderModalLabel">Thêm Lệnh Sản Xuất</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="orderForm">
+                    <input type="hidden" id="orderId">
+                    <div class="mb-3">
+                        <label for="orderCode" class="form-label">Mã Lệnh</label>
+                        <input type="text" class="form-control" id="orderCode" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="orderName" class="form-label">Tên Lệnh</label>
+                        <input type="text" class="form-control" id="orderName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productCode" class="form-label">Mã sản phẩm</label>
+                        <input type="text" class="form-control" id="productCode" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Số Lượng</label>
+                        <input type="number" class="form-control" id="quantity" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Mô tả</label>
+                        <input type="text" class="form-control" id="description" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="startDate" class="form-label">Ngày Bắt Đầu</label>
+                        <input type="date" class="form-control" id="startDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="endDate" class="form-label">Ngày Kết Thúc</label>
+                        <input type="date" class="form-control" id="endDate" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Link Bootstrap & FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Load jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- JavaScript -->
+<script>
+    const apiUrl = "https://localhost:7010/api/ProductionOrder/List";
+
+    // Hàm lấy danh sách lệnh sản xuất
+    async function loadOrders() {
+        try {
+            const response = await fetch(apiUrl);
+            const result = await response.json();
+
+            if (response.ok) {
+                const orders = result.data;
+                const tableBody = document.getElementById("orderTable");
+                tableBody.innerHTML = ""; // Xóa dữ liệu cũ
+
+                orders.forEach(order => {
+                    const row = `<tr id="row-${order.orderId}">
+                        <td>${order.orderCode}</td>
+                        <td>${order.orderName}</td>
+                        <td>${order.productCode}</td>
+                        <td>${order.quantity}</td>
+                        <td>${order.description}</td>
+                        <td>${order.startDate}</td>
+                        <td>${order.endDate}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editProductionOrder(${order.orderId})">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProductionOrder(${order.orderId})">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            } else {
+                console.error("Lỗi tải danh sách lệnh sản xuất:", result.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    //Thêm lệnh
+    async function addProductionOrder(event) {
+        event.preventDefault(); // Ngăn chặn form submit mặc định
+
+        const orderCode = document.getElementById("orderCode").value;
+        const orderName = document.getElementById("orderName").value;
+        const productCode = document.getElementById("productCode").value;
+        const quantity = document.getElementById("quantity").value;
+        const description = document.getElementById("description").value;
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+
+        const product = {
+            orderCode: orderCode,
+            orderName: orderName,
+            productCode: productCode,
+            quantity: quantity,
+            description: description,
+            startDate: startDate,
+            endDate: endDate
+        };
+
+        try {
+            const response = await fetch("https://localhost:7010/api/ProductionOrder/Insert", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(product)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Thêm sản phẩm mới vào danh sách hiện tại
+                const tableBody = document.getElementById("orderTable");
+                const row = `<tr id="row-${result.productorder.orderId}">
+                    <td>${orderCode}</td>
+                    <td>${orderName}</td>
+                    <td>${productCode}</td>
+                    <td>${quantity}</td>
+                    <td>${description}</td>
+                    <td>${startDate}</td>
+                    <td>${endDate}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editProductionOrder(${result.productorder.orderId})">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProductionOrder(${result.productorder.orderId})">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += row;
+
+                // Đóng modal
+                $('#addOrderModal').modal('hide');
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+            } else {
+                console.error("Lỗi khi thêm sản phẩm:", result.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    // Xóa lệnh
+    async function deleteProductionOrder(orderId) {
+        if (!confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
+
+        try {
+            const response = await fetch(`https://localhost:7010/api/ProductionOrder/Delete/${orderId}`, { method: "DELETE" });
+            if (response.ok) document.getElementById(`row-${orderId}`).remove();
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    // Sửa lệnh
+    async function editProductionOrder(orderId) {
+        try {
+            const response = await fetch(`https://localhost:7010/api/ProductionOrder/${orderId}`);
+
+            const result = await response.json();
+
+            if (response.ok) {
+                const order = result.productorder;
+
+                document.getElementById("orderId").value = order.orderId;
+                document.getElementById("orderCode").value = order.orderCode;
+                $("#orderCode").prop('disabled', true);
+                document.getElementById("productCode").value = order.productCode;
+                document.getElementById("orderName").value = order.orderName;
+                document.getElementById("quantity").value = order.quantity;
+                document.getElementById("description").value = order.description;
+                document.getElementById("startDate").value = order.startDate;
+                document.getElementById("endDate").value = order.endDate;
+
+                document.getElementById("addOrderModalLabel").textContent = "Cập Nhật Lệnh";
+                $('#addOrderModal').modal('show');
+            } else {
+                console.error("Lỗi tải sản phẩm:", result.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    // Lưu sản phẩm (Thêm mới hoặc Cập nhật)
+    async function saveOrder(event) {
+        event.preventDefault();
+
+        const orderId = document.getElementById("orderId").value;
+        const order = {
+            orderCode: document.getElementById("orderCode").value,
+            orderName: document.getElementById("orderName").value,
+            productCode: document.getElementById("productCode").value,
+            quantity: document.getElementById("quantity").value,
+            description: document.getElementById("description").value,
+            startDate: document.getElementById("startDate").value,
+            endDate: document.getElementById("endDate").value
+        };
+
+        try {
+            let response;
+            if (orderId) {
+                response = await fetch(`https://localhost:7010/api/ProductionOrder/Update/${orderId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(order)
+                });
+            } else {
+                response = await fetch("https://localhost:7010/api/ProductionOrder/Insert", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(order)
+                });
+            }
+
+            if (response.ok) {
+                // Đóng modal
+                $('#addOrderModal').modal('hide');
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+
+                loadOrders();
+            } else {
+                console.error("Lỗi khi lưu sản phẩm:", await response.json());
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    // Gắn sự kiện submit cho form
+    document.getElementById("orderForm").addEventListener("submit", saveOrder);
+
+    // Reset form khi mở modal
+    function resetForm() {
+        document.getElementById("orderForm").reset();
+        document.getElementById("orderId").value = "";
+        $("#orderCode").prop('disabled', false);
+        document.getElementById("addOrderModalLabel").textContent = "Thêm Lệnh";
+    }
+
+
+    // Tải dữ liệu khi trang load
+    loadOrders();
+</script>
+

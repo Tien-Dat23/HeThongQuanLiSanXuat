@@ -25,6 +25,17 @@ namespace HeThongQuanLiSanXuat_Backend.Controllers
             return Ok(new { data =  productorder });
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var productorder = await dbc.ProductionOrders.FindAsync(id);
+            if (productorder == null)
+            {
+                return NotFound(new { message = "Sản phẩm không tồn tại" });
+            }
+            return Ok(new{ productorder });
+        }
+
 
         [HttpPost("Insert")]
         public async Task<IActionResult> Insert([FromBody] ProductionOrder productionOrder)

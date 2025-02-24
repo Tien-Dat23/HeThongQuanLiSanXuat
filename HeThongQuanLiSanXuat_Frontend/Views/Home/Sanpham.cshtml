@@ -103,7 +103,7 @@
         }
     }
 
-
+    
     //Thêm sản phẩm
     async function addProduct(event) {
         event.preventDefault(); // Ngăn chặn form submit mặc định
@@ -233,9 +233,6 @@
                 $('body').removeClass('modal-open');
                 $('.modal-backdrop').remove();
 
-                // Load lại dữ liệu.
-                // - Cách 1: Chỉ load lại 1 dòng - Nếu thêm mới => thêm 1 dòng mới; - Nếu update => sửa lại html của dòng cũ
-                // - Cách 2: Load lại dữ liệu từ database. (dữ liệu nhỏ thì oke, đảm bảo dữ liệu luôn mới nhất. Đơn giản hơn.)
                 loadProducts();
             } else {
                 console.error("Lỗi khi lưu sản phẩm:", await response.json());
