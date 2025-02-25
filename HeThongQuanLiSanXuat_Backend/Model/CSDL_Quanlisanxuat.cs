@@ -37,7 +37,7 @@ public partial class CSDL_Quanlisanxuat : DbContext
 
         modelBuilder.Entity<Employee>(entity =>
         {
-            entity.HasKey(e => e.Username).HasName("employees_pkey");
+            entity.HasKey(e => e.EmployeeId).HasName("employees_pkey");
 
             entity.HasOne(d => d.Department).WithMany(p => p.Employees)
                 .OnDelete(DeleteBehavior.SetNull)

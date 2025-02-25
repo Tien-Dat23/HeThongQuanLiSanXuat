@@ -61,7 +61,7 @@
 <script>
     const apiUrl = "https://localhost:7010/api/Department/List";
 
-    // Hàm lấy danh sách công đoạn
+    // Hàm lấy danh sách phòng ban
     async function loadDepartments() {
         try {
             const response = await fetch(apiUrl);
@@ -96,7 +96,7 @@
         }
     }
 
-    //Thêm sản phẩm
+    //Thêm phòng ban
     async function addDepartment(event) {
         event.preventDefault();
 
@@ -152,7 +152,7 @@
     }
 
 
-    // Xóa sản phẩm
+    // Xóa phòng ban
     async function deleteDepartment(departmentId) {
         if (!confirm("Bạn có chắc muốn xóa phòng ban này?")) return;
 
@@ -164,7 +164,7 @@
         }
     }
 
-    // Sửa sản phẩm
+    // Sửa phòng ban
     async function editDepartment(departmentId) {
         try {
             const response = await fetch(`https://localhost:7010/api/Department/${departmentId}`);
@@ -187,7 +187,7 @@
         }
     }
 
-    // Lưu sản phẩm (Thêm mới hoặc Cập nhật)
+    // Lưu phòng ban (Thêm mới hoặc Cập nhật)
     async function saveDepartment(event) {
         event.preventDefault();
 

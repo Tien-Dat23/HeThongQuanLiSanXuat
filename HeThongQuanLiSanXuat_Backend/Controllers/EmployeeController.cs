@@ -54,15 +54,9 @@ namespace HeThongQuanLiSanXuat_Backend.Controllers
         [HttpPost("Insert")]
         public async Task<IActionResult> Insert([FromBody] Employee employee)
         {
-            if(employee == null )
-            {
-                return BadRequest(new { message = "Dữ liệu không hợp lệ" });
-            }
+            if(employee == null ) return BadRequest(new { message = "Dữ liệu không hợp lệ" });
 
-            if (await dbc.Employees.AnyAsync(e => e.Username == employee.Username))
-            {
-                return BadRequest(new { message = "Username đã tồn tại!" });
-            }
+            if (await dbc.Employees.AnyAsync(e => e.Username == employee.Username)) return BadRequest(new { message = "Username đã tồn tại!" });
 
             dbc.Employees.Add(employee);
             await dbc.SaveChangesAsync();
