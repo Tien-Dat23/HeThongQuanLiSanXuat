@@ -109,67 +109,6 @@
         }
     }
 
-    //Thêm sản phẩm
-    async function addMachine(event) {
-        event.preventDefault(); // Ngăn chặn form submit mặc định
-
-        const machineCode = document.getElementById("machineCode").value;
-        const machineName = document.getElementById("machineName").value;
-        const serialNumber = document.getElementById("serialNumber").value;
-        const capacity = document.getElementById("capacity").value;
-        const description = document.getElementById("description").value;
-
-        const machine = {
-            machineCode: machineCode,
-            machineName: machineName,
-            serialNumber: serialNumber,
-            capacity: capacity,
-            description: description
-        };
-
-        try {
-            const response = await fetch("https://localhost:7010/api/Machine/Insert", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(machine)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                // Thêm sản phẩm mới vào danh sách hiện tại
-                const tableBody = document.getElementById("machineTable");
-                const newRow = `<tr id="row-${result.machine.machineId}">
-                    <td>${machineCode}</td>
-                    <td>${machineName}</td>
-                    <td>${serialNumber}</td>
-                    <td>${capacity}</td>
-                    <td>${description}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="editMachine(${result.machine.machineId})">
-                            <i class="fas fa-edit"></i> Sửa
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteMachine(${result.machine.machineId})">
-                            <i class="fas fa-trash"></i> Xóa
-                        </button>
-                    </td>
-                </tr>`;
-                tableBody.innerHTML += newRow;
-
-                // Đóng modal
-                $('#addMachineModal').modal('hide');
-                $('body').removeClass('modal-open');
-                $('.modal-backdrop').remove();
-            } else {
-                console.error("Lỗi khi thêm sản phẩm:", result.message);
-            }
-        } catch (error) {
-            console.error("Lỗi khi gọi API:", error);
-        }
-    }
-
     // Xóa sản phẩm
     async function deleteMachine(machineId) {
         if (!confirm("Bạn có chắc muốn xóa thiết bị này?")) return;

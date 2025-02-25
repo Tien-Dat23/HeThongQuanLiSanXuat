@@ -96,62 +96,6 @@
         }
     }
 
-    //Thêm phòng ban
-    async function addDepartment(event) {
-        event.preventDefault();
-
-        const departmentCode = document.getElementById("departmentCode").value;
-        const departmentName = document.getElementById("departmentName").value;
-        const description = document.getElementById("description").value;
-
-        const department = {
-            departmentCode: departmentCode,
-            departmentName: departmentName,
-            description: description
-        };
-
-        try {
-            const response = await fetch("https://localhost:7010/api/Department/Insert", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(department)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                // Thêm sản phẩm mới vào danh sách hiện tại
-                const tableBody = document.getElementById("departmentTable");
-                const newRow = `<tr id="row-${result.department.departmentId}">
-                    <td>${departmentCode}</td>
-                    <td>${departmentName}</td>
-                    <td>${description}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="editDepartment(${result.department.departmentId})">
-                            <i class="fas fa-edit"></i> Sửa
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteDepartment(${result.department.departmentId})">
-                            <i class="fas fa-trash"></i> Xóa
-                        </button>
-                    </td>
-                </tr>`;
-                tableBody.innerHTML += newRow;
-
-                // Đóng modal
-                $('#addDepartmentModal').modal('hide');
-                $('body').removeClass('modal-open');
-                $('.modal-backdrop').remove();
-            } else {
-                console.error("Lỗi khi thêm phòng ban:", result.message);
-            }
-        } catch (error) {
-            console.error("Lỗi khi gọi API:", error);
-        }
-    }
-
-
     // Xóa phòng ban
     async function deleteDepartment(departmentId) {
         if (!confirm("Bạn có chắc muốn xóa phòng ban này?")) return;

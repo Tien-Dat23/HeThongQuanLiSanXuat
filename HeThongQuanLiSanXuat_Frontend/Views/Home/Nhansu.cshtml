@@ -129,65 +129,6 @@
     }
 
 
-    //Thêm nhân sự
-    async function addEmployee(event) {
-        event.preventDefault(); // Ngăn chặn form submit mặc định
-
-
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-        const fullname = document.getElementById("fullname").value;
-        const departmentId = document.getElementById("department").value;
-
-        const employee = {
-            username: username,
-            password: password,
-            fullname: fullname,
-            departmentId: departmentId
-        };
-
-        try {
-            const response = await fetch("https://localhost:7010/api/Employee/Insert", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(employee)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                // Thêm nhân sự mới vào danh sách hiện tại
-                const tableBody = document.getElementById("employeeTable");
-                const newRow = `<tr id="row-${result.employee.employeeId}">
-                    <td>${username}</td>
-                    <td>${password}</td>
-                    <td>${fullName}</td>
-                    <td>${result.employee.departmentName}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm" onclick="editEmployee(${result.employee.employeeId})">
-                            <i class="fas fa-edit"></i> Sửa
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteEmployee(${result.employee.employeeId})">
-                            <i class="fas fa-trash"></i> Xóa
-                        </button>
-                    </td>
-                </tr>`;
-                tableBody.innerHTML += newRow;
-
-                // Đóng modal
-                $('#addEmployeeModal').modal('hide');
-                $('body').removeClass('modal-open');
-                $('.modal-backdrop').remove();
-            } else {
-                console.error("Lỗi khi thêm sản phẩm:", result.message);
-            }
-        } catch (error) {
-            console.error("Lỗi khi gọi API:", error);
-        }
-    }
-
     // Xóa nhân sự
     async function deleteEmployee(employeeId) {
         if (!confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
@@ -233,7 +174,7 @@
             username: document.getElementById("username").value,
             password: document.getElementById("password").value,
             fullname: document.getElementById("fullname").value,
-            department: document.getElementById("department").value
+            departmentId: document.getElementById("department").value
         };
 
         try {
