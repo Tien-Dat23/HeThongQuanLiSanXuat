@@ -21,23 +21,34 @@ namespace HeThongQuanLiSanXuat_Backend.Controllers
         [HttpGet("List")]
         public async Task<IActionResult> GetList()
         {
-            var employee = await dbc.Employees
-                                    .Include(e => e.Department)                    
-                                    .ToListAsync();
+            var employee = await dbc.Employees.Include(e => e.Department).ToListAsync();
+
             if(employee == null || employee.Count==0) {
                 return BadRequest(new { message = "Không có nhân viên nào trong hệ thống" });
             }
 
             var result = employee.Select(e => new
             {
+                e.EmployeeId,
                 e.Username,
                 e.Password,
                 e.FullName,
-                e.DepartmentId,
-                DepartmentName = e.Department?.DepartmentName // Lấy tên phòng ban
+                DepartmentName = e.Department?.DepartmentName
             });
 
             return Ok(new { data = result });
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var employee = await dbc.Employees.FindAsync(id);
+            if(employee == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(new { employee });
         }
 
         [HttpPost("Insert")]
@@ -48,13 +59,18 @@ namespace HeThongQuanLiSanXuat_Backend.Controllers
                 return BadRequest(new { message = "Dữ liệu không hợp lệ" });
             }
 
+            if (await dbc.Employees.AnyAsync(e => e.Username == employee.Username))
+            {
+                return BadRequest(new { message = "Username đã tồn tại!" });
+            }
+
             dbc.Employees.Add(employee);
             await dbc.SaveChangesAsync();
             return Ok(new { message = "Thêm dữ liệu nhân viên thành công", employee});
         }
 
-        [HttpPut("Update/{username}")]
-        public async Task<IActionResult> Update(string username, [FromBody] Employee updateEmployee)
+        [HttpPut("Update/{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] Employee updateEmployee)
         {
             if(updateEmployee == null) {
                 return BadRequest(new
@@ -63,12 +79,13 @@ namespace HeThongQuanLiSanXuat_Backend.Controllers
                 });
             }
 
-            var employee = await dbc.Employees.FindAsync(username);
+            var employee = await dbc.Employees.FindAsync(id);
             if(employee == null)
             {
                 return NotFound();
             }
 
+            employee.Username = updateEmployee.Username;
             employee.Password = updateEmployee.Password;
             employee.FullName = updateEmployee.FullName;
             employee.DepartmentId = updateEmployee.DepartmentId;
@@ -77,10 +94,10 @@ namespace HeThongQuanLiSanXuat_Backend.Controllers
             return Ok(new { message = "Cập nhật nhân viên thành công", employee });
         }
 
-        [HttpDelete("Delete/{username}")]
-        public async Task<IActionResult> Delete(string username)
+        [HttpDelete("Delete/{id}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            var employee = await dbc.Employees.FindAsync(username);
+            var employee = await dbc.Employees.FindAsync(id);
             if(employee == null) {
                 return NotFound();
             }

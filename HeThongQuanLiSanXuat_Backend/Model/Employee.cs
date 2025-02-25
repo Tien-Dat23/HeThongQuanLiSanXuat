@@ -11,6 +11,10 @@ namespace HeThongQuanLiSanXuat_Backend.Model;
 public partial class Employee
 {
     [Key]
+    [Column("employee_id")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int EmployeeId { get; set; }
+
     [Column("username")]
     [StringLength(50)]
     public string Username { get; set; } = null!;

@@ -24,7 +24,18 @@ namespace HeThongQuanLiSanXuat_Backend.Controllers
             return Ok(new { data = stage });
         }
 
-        [HttpPost("Inset")]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var stage = await dbc.Stages.FindAsync(id);
+            if (stage == null)
+            {
+                return NotFound();
+            }
+            return Ok(new { stage });
+        }
+
+        [HttpPost("Insert")]
         public async Task<IActionResult> Insert([FromBody] Stage stage)
         {
             if(stage == null || string.IsNullOrEmpty(stage.StageCode))

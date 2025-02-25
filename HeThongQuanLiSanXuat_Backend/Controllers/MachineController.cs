@@ -29,6 +29,17 @@ namespace HeThongQuanLiSanXuat_Backend.Controllers
             return Ok(new {data = machine});
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var machine = await dbc.Machines.FindAsync(id);
+            if(machine == null)
+            {
+                return NotFound();
+            }
+            return Ok(new { machine });
+        }
+
         [HttpPost("Insert")]
         public async Task<IActionResult> Insert([FromBody] Machine machine)
         {

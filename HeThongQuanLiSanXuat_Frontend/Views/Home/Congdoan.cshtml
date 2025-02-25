@@ -1,1 +1,244 @@
-﻿<h1>Công đoạn</h1>
+﻿<div class="container mt-4">
+    <h2 class="mb-3">Công đoạn</h2>
+
+    <!-- Nút thêm sản phẩm -->
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addStageModal" onclick="resetForm()">
+        <i class="fas fa-plus"></i> Thêm công đoạn
+    </button>
+
+    <!-- Bảng danh mục sản phẩm -->
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Mã công đoạn</th>
+                <th>Tên công đoạn</th>
+                <th>Mô tả</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody id="stageTable">
+            <!-- Dữ liệu sẽ được load từ API -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal thêm/sửa sản phẩm -->
+<div class="modal fade" id="addStageModal" tabindex="-1" aria-labelledby="addStageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addStageModalLabel">Thêm Sản Phẩm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="stageForm">
+                    <input type="hidden" id="stageId">
+                    <div class="mb-3">
+                        <label for="stageCode" class="form-label">Mã công đoạn</label>
+                        <input type="text" class="form-control" id="stageCode" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="stageName" class="form-label">Tên công đoạn</label>
+                        <input type="text" class="form-control" id="stageName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="description" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Link Bootstrap & FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Load jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    const apiUrl = "https://localhost:7010/api/Stage/List";
+
+    // Hàm lấy danh sách công đoạn
+    async function loadStages() {
+        try {
+            const response = await fetch(apiUrl);
+            const result = await response.json();
+
+            if (response.ok) {
+                const stages = result.data;
+                const tableBody = document.getElementById("stageTable");
+                tableBody.innerHTML = ""; // Xóa dữ liệu cũ
+
+                stages.forEach(stage => {
+                    const row = `<tr id="row-${stage.stageId}">
+                        <td>${stage.stageCode}</td>
+                        <td>${stage.stageName}</td>
+                        <td>${stage.description}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editStage(${stage.stageId})">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteStage(${stage.stageId})">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            } else {
+                console.error("Lỗi tải danh sách công đoạn:", result.message);
+            }
+        }catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    //Thêm sản phẩm
+    async function addStage(event) {
+        event.preventDefault();
+
+        const stageCode = document.getElementById("stageCode").value;
+        const stageName = document.getElementById("stageName").value;
+        const description = document.getElementById("description").value;
+
+        const stage = {
+            stageCode: stageCode,
+            stageName: stageName,
+            description: description
+        };
+
+        try {
+            const response = await fetch("https://localhost:7010/api/Stage/Insert", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(stage)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Thêm sản phẩm mới vào danh sách hiện tại
+                const tableBody = document.getElementById("stageTable");
+                const newRow = `<tr id="row-${result.stage.stageId}">
+                    <td>${stageCode}</td>
+                    <td>${stageName}</td>
+                    <td>${description}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editStage(${result.stage.stageId})">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteStage(${result.stage.stageId})">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += newRow;
+
+                // Đóng modal
+                $('#addStageModal').modal('hide');
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+            } else {
+                console.error("Lỗi khi thêm công đoạn:", result.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+
+    // Xóa sản phẩm
+    async function deleteStage(stageId) {
+        if (!confirm("Bạn có chắc muốn xóa công đoạn này?")) return;
+
+        try {
+            const response = await fetch(`https://localhost:7010/api/Stage/Delete/${stageId}`, { method: "DELETE" });
+            if (response.ok) document.getElementById(`row-${stageId}`).remove();
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    // Sửa sản phẩm
+    async function editStage(stageId) {
+        try {
+            const response = await fetch(`https://localhost:7010/api/Stage/${stageId}`);
+            const result = await response.json();
+
+            if (response.ok) {
+                const stage = result.stage;
+                document.getElementById("stageId").value = stage.stageId;
+                document.getElementById("stageCode").value = stage.stageCode;
+                document.getElementById("stageName").value = stage.stageName;
+                document.getElementById("description").value = stage.description;
+
+                document.getElementById("addStageModalLabel").textContent = "Cập Nhật Công Đoạn";
+                $('#addStageModal').modal('show');
+            } else {
+                console.error("Lỗi tải công đoạn:", result.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    // Lưu sản phẩm (Thêm mới hoặc Cập nhật)
+    async function saveStage(event) {
+        event.preventDefault();
+
+        const stageId = document.getElementById("stageId").value;
+        const stage = {
+            stageCode: document.getElementById("stageCode").value,
+            stageName: document.getElementById("stageName").value,
+            description: document.getElementById("description").value
+        };
+
+        try {
+            let response;
+            if (stageId) {
+                response = await fetch(`https://localhost:7010/api/Stage/Update/${stageId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(stage)
+                });
+            } else {
+                response = await fetch("https://localhost:7010/api/Stage/Insert", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(stage)
+                });
+            }
+
+            if (response.ok) {
+                // Đóng modal
+                $('#addStageModal').modal('hide');
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+
+                loadStages();
+            } else {
+                console.error("Lỗi khi lưu công đoạn:", await response.json());
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+
+    // Gắn sự kiện submit cho form
+    document.getElementById("stageForm").addEventListener("submit", saveStage);
+
+    // Reset form khi mở modal
+    function resetForm() {
+        document.getElementById("stageForm").reset();
+        document.getElementById("stageId").value = "";
+        document.getElementById("addStageModalLabel").textContent = "Thêm Công Đoạn";
+    }
+
+    loadStages();
+</script>

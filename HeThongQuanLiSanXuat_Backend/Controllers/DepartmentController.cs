@@ -24,6 +24,17 @@ namespace HeThongQuanLiSanXuat_Backend.Controllers
             return Ok(new { data = department });
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var department = await dbc.Departments.FindAsync(id);
+            if (department == null)
+            {
+                return NotFound();
+            }
+            return Ok(new { department });
+        }
+
         [HttpPost("Insert")]
         public async Task<IActionResult> Insert([FromBody] Department department)
         {

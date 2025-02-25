@@ -190,7 +190,7 @@
 
     // Xóa lệnh
     async function deleteProductionOrder(orderId) {
-        if (!confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
+        if (!confirm("Bạn có chắc muốn xóa lệnh này?")) return;
 
         try {
             const response = await fetch(`https://localhost:7010/api/ProductionOrder/Delete/${orderId}`, { method: "DELETE" });
@@ -223,7 +223,7 @@
                 document.getElementById("addOrderModalLabel").textContent = "Cập Nhật Lệnh";
                 $('#addOrderModal').modal('show');
             } else {
-                console.error("Lỗi tải sản phẩm:", result.message);
+                console.error("Lỗi tải lệnh sản xuất:", result.message);
             }
         } catch (error) {
             console.error("Lỗi khi gọi API:", error);

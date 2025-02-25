@@ -1,5 +1,5 @@
 ﻿<div class="container mt-4">
-    <h2 class="mb-3">Danh Mục Sản Phẩm</h2>
+    <h2 class="mb-3">Sản Phẩm</h2>
 
     <!-- Nút thêm sản phẩm -->
     <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal" onclick="resetForm()">
@@ -65,7 +65,7 @@
 
 <!-- JavaScript -->
 <script>
-    const apiUrl = "https://localhost:7010/api/Product/List"; // Đổi URL nếu cần
+    const apiUrl = "https://localhost:7010/api/Product/List";
 
     // Hàm lấy danh sách sản phẩm
     async function loadProducts() {
@@ -174,7 +174,7 @@
         }
     }
 
-    // Mở modal và load thông tin sản phẩm để sửa
+    // Sửa sản phẩm
     async function editProduct(productId) {
         try {
             const response = await fetch(`https://localhost:7010/api/Product/${productId}`);
@@ -241,7 +241,7 @@
             console.error("Lỗi khi gọi API:", error);
         }
     }
-    
+
 
     // Gắn sự kiện submit cho form
     document.getElementById("productForm").addEventListener("submit", saveProduct);

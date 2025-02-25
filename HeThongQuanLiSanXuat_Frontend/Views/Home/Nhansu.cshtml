@@ -1,1 +1,257 @@
-﻿<h1>Nhân sự</h1>
+﻿<div class="container mt-4">
+    <h2 class="mb-3">Nhân sự</h2>
+
+    <!-- Nút thêm sản phẩm -->
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addEmployeeModal" onclick="resetForm()">
+        <i class="fas fa-plus"></i> Thêm nhân sự
+    </button>
+
+    <!-- Bảng danh mục sản phẩm -->
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Tên tài khoản</th>
+                <th>Mật khẩu</th>
+                <th>Họ và tên</th>
+                <th>Phòng ban</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody id="employeeTable">
+            <!-- Dữ liệu sẽ được load từ API -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal thêm/sửa sản phẩm -->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addEmployeeModalLabel">Thêm Nhân Sự</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="employeeForm">
+                    <input type="hidden" id="employeeId">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Tên tài khoản</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mật khẩu</label>
+                        <input type="text" class="form-control" id="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fullname" class="form-label">Họ và tên</label>
+                        <input type="text" class="form-control" id="fullname" required>
+                    </div>
+                    <label for="department" class="form-label">Phòng ban</label>
+                        <select class="form-control" id="department" required>
+                            <option value="">Chọn phòng ban</option>
+                        </select>
+                    <button type="submit" class="btn btn-primary mt-3">Lưu</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Link Bootstrap & FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Load jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- JavaScript -->
+<script>
+    const apiUrl = "https://localhost:7010/api/Employee/List";
+
+    // Hàm lấy danh sách sản phẩm
+    async function loadEmployees() {
+        try {
+            const response = await fetch(apiUrl);
+            const result = await response.json();
+
+            if (response.ok) {
+                const employees = result.data;
+                const tableBody = document.getElementById("employeeTable");
+                tableBody.innerHTML = ""; // Xóa dữ liệu cũ
+
+                employees.forEach(employee => {
+                    const row = `<tr id="row-${employee.employeeId}">
+                        <td>${employee.username}</td>
+                        <td>${employee.password}</td>
+                        <td>${employee.fullName}</td>
+                        <td>${employee.departmentName}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editEmployee(${employee.employeeId})">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteEmployee(${employee.employeeId})">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            } else {
+                console.error("Lỗi tải danh sách nhân sự:", result.message);
+            }
+        }catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+
+    //Thêm sản phẩm
+    async function addEmployee(event) {
+        event.preventDefault(); // Ngăn chặn form submit mặc định
+
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const fullname = document.getElementById("fullname").value;
+        const department = document.getElementById("department").value;
+
+        const employee = {
+            username: username,
+            password: password,
+            fullname: fullname,
+            department: department
+        };
+
+        try {
+            const response = await fetch("https://localhost:7010/api/Employee/Insert", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(employee)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Thêm sản phẩm mới vào danh sách hiện tại
+                const tableBody = document.getElementById("employeeTable");
+                const newRow = `<tr id="row-${result.employee.employeeId}">
+                    <td>${username}</td>
+                    <td>${password}</td>
+                    <td>${fullName}</td>
+                    <td>${departmentName}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editEmployee(${result.employee.employeeId})">
+                            <i class="fas fa-edit"></i> Sửa
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteEmployee(${result.employee.employeeId})">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += newRow;
+
+                // Đóng modal
+                $('#addEmployeeModal').modal('hide');
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+            } else {
+                console.error("Lỗi khi thêm sản phẩm:", result.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    // Xóa sản phẩm
+    async function deleteEmployee(employeeId) {
+        if (!confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
+
+        try {
+            const response = await fetch(`https://localhost:7010/api/Employee/Delete/${employeeId}`, { method: "DELETE" });
+            if (response.ok) document.getElementById(`row-${employeeId}`).remove();
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    // Sửa sản phẩm
+    async function editEmployee(employeeId) {
+        try {
+            const response = await fetch(`https://localhost:7010/api/Employee/${employeeId}`);
+            const result = await response.json();
+
+            if (response.ok) {
+                const employee = result.employee;
+                document.getElementById("employeeId").value = employee.employeeId;
+                document.getElementById("username").value = employee.username;
+                document.getElementById("password").value = employee.password;
+                document.getElementById("fullname").value = employee.fullname;
+                document.getElementById("department").value = employee.department;
+
+                document.getElementById("addEmployeeModalLabel").textContent = "Cập Nhật Nhân Sự";
+                $('#addEmployeeModal').modal('show');
+            } else {
+                console.error("Lỗi tải nhân sự:", result.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    // Lưu sản phẩm (Thêm mới hoặc Cập nhật)
+    async function saveEmployee(event) {
+        event.preventDefault();
+
+        const employeeId = document.getElementById("employeeId").value;
+        const employee = {
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value,
+            fullname: document.getElementById("fullname").value,
+            department: document.getElementById("department").value
+        };
+
+        try {
+            let response;
+            if (employeeId) {
+                response = await fetch(`https://localhost:7010/api/Employee/Update/${employeeId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(employee)
+                });
+            } else {
+                response = await fetch("https://localhost:7010/api/Employee/Insert", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(employee)
+                });
+            }
+
+            if (response.ok) {
+                // Đóng modal
+                $('#addEmployeeModal').modal('hide');
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+
+                loadEmployees();
+            } else {
+                console.error("Lỗi khi lưu sản phẩm:", await response.json());
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+
+    // Gắn sự kiện submit cho form
+    document.getElementById("employeeForm").addEventListener("submit", saveEmployee);
+
+    // Reset form khi mở modal
+    function resetForm() {
+        document.getElementById("employeeForm").reset();
+        document.getElementById("employeeId").value = "";
+        document.getElementById("addEmployeeModalLabel").textContent = "Thêm Nhân Sự";
+    }
+
+    // Tải dữ liệu khi trang load
+    loadEmployees();
+</script>
