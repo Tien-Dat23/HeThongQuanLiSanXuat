@@ -1,12 +1,12 @@
 ﻿<div class="container mt-4">
     <h2 class="mb-3">Thiết bị, máy móc</h2>
 
-    <!-- Nút thêm sản phẩm -->
+    <!-- Nút thêm -->
     <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addMachineModal" onclick="resetForm()">
         <i class="fas fa-plus"></i> Thêm thiết bị
     </button>
 
-    <!-- Bảng danh mục sản phẩm -->
+    <!-- Bảng danh mục -->
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
             <tr>
@@ -24,7 +24,7 @@
     </table>
 </div>
 
-<!-- Modal thêm/sửa sản phẩm -->
+<!-- Modal thêm/sửa -->
 <div class="modal fade" id="addMachineModal" tabindex="-1" aria-labelledby="addMachineModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -72,7 +72,7 @@
 <script>
     const apiUrl = "https://localhost:7010/api/Machine/List";
 
-    // Hàm lấy danh sách sản phẩm
+    // Hàm lấy danh sách
     async function loadMachines() {
         try {
             const response = await fetch(apiUrl);
@@ -109,7 +109,7 @@
         }
     }
 
-    // Xóa sản phẩm
+    // Xóa 
     async function deleteMachine(machineId) {
         if (!confirm("Bạn có chắc muốn xóa thiết bị này?")) return;
 
@@ -121,7 +121,7 @@
         }
     }
 
-    // Sửa sản phẩm
+    // Sửa 
     async function editMachine(machineId) {
         try {
             const response = await fetch(`https://localhost:7010/api/Machine/${machineId}`);
@@ -146,7 +146,7 @@
         }
     }
 
-    // Lưu sản phẩm (Thêm mới hoặc Cập nhật)
+    // Lưu (Thêm mới hoặc Cập nhật)
     async function saveMachine(event) {
         event.preventDefault();
 
